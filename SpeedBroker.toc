@@ -1,0 +1,11 @@
+## Interface: 120000, 120001, 120005, 120007
+## Title: Speed Broker
+## Notes: Shows current run/walk/swim/fly/skyriding speed on any LibDataBroker bar (Arcana, Titan, Bazooka, etc.)
+## Author: Court
+## Version: 1.0.0
+## SavedVariables: SpeedBrokerDB
+
+Libs\LibStub.lua
+Libs\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1.lua
+SpeedBroker.lua
