@@ -2,7 +2,7 @@
 ## Title: Speed Broker
 ## Notes: Shows current run/walk/swim/fly/skyriding speed on any LibDataBroker bar (Arcana, Titan, Bazooka, etc.)
 ## Author: Court
-## Version: 1.0.0
+## Version: 1.0.2
 ## SavedVariables: SpeedBrokerDB
 
 Libs\LibStub.lua

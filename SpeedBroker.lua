@@ -16,6 +16,16 @@ local mode = "Run"
 
 local function pct(yds) return yds / BASE * 100 end
 
+-- 12.0+: speed values can be "secret" in restricted contexts (combat, instances).
+-- Secrets can't be compared or used in math, so skip updates while any are present.
+local function IsSecret(...)
+    if not issecretvalue then return false end
+    for i = 1, select("#", ...) do
+        if issecretvalue((select(i, ...))) then return true end
+    end
+    return false
+end
+
 local function fmt(yds)
     if db and db.yards then
         return string.format("%.1f yd/s", yds)
@@ -27,12 +37,14 @@ local function GetSpeed()
     -- Skyriding: GetUnitSpeed doesn't report it, use gliding info
     if C_PlayerInfo and C_PlayerInfo.GetGlidingInfo then
         local isGliding, _, forwardSpeed = C_PlayerInfo.GetGlidingInfo()
+        if IsSecret(isGliding, forwardSpeed) then return nil end
         if isGliding and forwardSpeed then
             return forwardSpeed, "Skyriding"
         end
     end
 
     local current, run, flight, swim = GetUnitSpeed("player")
+    if IsSecret(current, run, flight, swim) then return nil end
 
     if UnitOnTaxi("player") then return current, "Taxi" end
 
@@ -43,10 +55,10 @@ local function GetSpeed()
         return current, "Run"
     end
 
-    -- Standing still: show what you'd move at
-    if IsSwimming() then return swim, "Swim" end
-    if IsFlying() then return flight, "Fly" end
-    return run, "Run"
+    -- Standing still / hovering: actual speed is 0
+    if IsSwimming() then return 0, "Swim" end
+    if IsFlying() then return 0, "Fly" end
+    return 0, "Idle"
 end
 
 local elapsed = 0
@@ -56,6 +68,7 @@ frame:SetScript("OnUpdate", function(_, dt)
     if elapsed < THROTTLE then return end
     elapsed = 0
     local speed, m = GetSpeed()
+    if not speed then return end -- secret values; keep last displayed text
     mode = m
     local text = (db and db.showMode ~= false) and (m .. ": " .. fmt(speed)) or fmt(speed)
     if obj.text ~= text then obj.text = text end
@@ -82,6 +95,10 @@ obj.OnTooltipShow = function(tt)
     local current, run, flight, swim = GetUnitSpeed("player")
     tt:AddLine("Speed")
     tt:AddDoubleLine("Mode", mode, 1, 1, 1, 1, 0.82, 0)
+    if IsSecret(current, run, flight, swim) then
+        tt:AddLine("Speed unavailable right now (restricted by the game)", 1, 0.5, 0.5)
+        return
+    end
     tt:AddDoubleLine("Current", string.format("%d%%  (%.1f yd/s)", pct(current), current), 1, 1, 1, 1, 1, 1)
     tt:AddDoubleLine("Run", string.format("%d%%", pct(run)), 1, 1, 1, 1, 1, 1)
     tt:AddDoubleLine("Swim", string.format("%d%%", pct(swim)), 1, 1, 1, 1, 1, 1)
