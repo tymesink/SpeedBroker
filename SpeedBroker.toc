@@ -1,4 +1,4 @@
-## Interface: 120000, 120001, 120005, 120007
+## Interface: 120000, 120001, 120005, 120007, 120105
 ## Title: Speed Broker
 ## Notes: Shows current run/walk/swim/fly/skyriding speed on any LibDataBroker bar (Arcana, Titan, Bazooka, etc.)
 ## Author: Court
